@@ -86,4 +86,46 @@ class TaskController extends Controller {
 
         return $tasks;
     }
+
+    public function saveTask($taskName, $category) {
+
+        $task =    [
+            "task_name" => $taskName,
+            "category" => $category
+        ];
+
+        if (DB::table('tasks')->where('task_name', $taskName)->doesntExist()) {
+            try {
+                $id = DB::table('tasks')->insertGetId($task);
+
+                $newTask = DB::table('tasks')
+                    ->where('id', $id)
+                    ->select("id", "task_name", "category")
+                    ->get();
+
+                return $newTask;
+            } catch (\Exception $e) {
+                Log::info("Exception found while inserting task, Exception object: ${e}");
+            }
+        } else {
+            return "exists";
+        }
+    }
+
+    public function updateCategory($taskId, $category) {
+
+        $updatedTask = DB::table('tasks')
+            ->where('id', $taskId)
+            ->update([
+                'category' => $category
+            ]);
+
+        if ($updatedTask) {
+            $tasks = DB::table('tasks')
+                ->select("id", "task_name", "category")
+                ->get();
+
+            return $tasks;
+        }
+    }
 }
